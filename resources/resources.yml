@@ -1,0 +1,9 @@
+- name: user
+  fields:
+    - name: id
+      ops: R
+      width: 20px
+    - name: name
+    - name: email
+    - name: role
+      values: allRoles

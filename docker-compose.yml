@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  mysql_db:
+    image: mysql:8
+    container_name: mysql_lazyadmin
+    restart: always
+    ports:
+      - "3309:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    volumes:
+      - db:/var/lib/mysql/
+volumes:
+  db:
