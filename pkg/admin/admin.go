@@ -4,16 +4,14 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/taverok/lazyadmin/pkg/admin/config"
 	"github.com/taverok/lazyadmin/pkg/admin/page"
+	"github.com/taverok/lazyadmin/pkg/admin/resource"
 	"github.com/taverok/lazyadmin/pkg/admin/static"
 	database "github.com/taverok/lazyadmin/pkg/db"
 )
 
 type App struct {
-	Router        *mux.Router
-	Config        config.Config
-	StaticService *static.Service
-
-	resources []*page.Resource
+	Router *mux.Router
+	Config config.Config
 }
 
 func (it *App) Init() error {
@@ -22,42 +20,22 @@ func (it *App) Init() error {
 		return err
 	}
 
-	it.StaticService = &static.Service{Config: it.Config}
-
-	err = it.initResources()
-	if err != nil {
-		return err
-	}
-
 	// repos
 	pageRepo := &page.MysqlRepo{DB: db}
 
 	// services
-	pageService := page.NewService(it.Router, pageRepo, it.resources)
+	staticService := &static.Service{Config: it.Config}
+	resourceService := resource.NewService(db, staticService)
+	pageService := page.NewService(pageRepo, resourceService)
 
 	// handlers
 	pageHandler := page.Handler{
 		Router:        it.Router,
 		Config:        it.Config,
-		StaticService: it.StaticService,
+		StaticService: staticService,
 		Service:       pageService,
 	}
 	pageHandler.Register()
-
-	return nil
-}
-
-func (it *App) initResources() error {
-	err := it.StaticService.MapYml("resources", &it.resources)
-	if err != nil {
-		return err
-	}
-
-	for _, resource := range it.resources {
-		for _, f := range resource.Fields {
-			f.SetDefaults()
-		}
-	}
 
 	return nil
 }

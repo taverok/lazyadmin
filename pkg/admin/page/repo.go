@@ -5,13 +5,14 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
+	"github.com/taverok/lazyadmin/pkg/admin/resource"
 )
 
 type MysqlRepo struct {
 	DB *sqlx.DB
 }
 
-func (it *MysqlRepo) GetAll(fields []*Field, table string) ([][]any, error) {
+func (it *MysqlRepo) GetAll(fields []*resource.Field, table string) ([][]any, error) {
 	var result [][]any
 	var fieldNames []string
 

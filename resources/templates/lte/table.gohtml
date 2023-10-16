@@ -13,7 +13,7 @@
                         <tr class="jsgrid-header-row">
                             {{range .Content.Fields}}
                                 <th class="jsgrid-header-cell jsgrid-align-center jsgrid-header-sortable"
-                                    style="width: {{.Width}};">
+                                    style="width: {{.GetPxWidth}}px;">
                                     {{ .Name}}
                                 </th>
                             {{end}}
@@ -30,7 +30,7 @@
                         {{range $rowNo, $row := .Content.Data}}
                             <tr class="jsgrid-row">
                                 {{range $colNo, $data := $row}}
-                                    <td class="jsgrid-cell" style="width: {{(index $.Content.Fields $colNo).Width}};">
+                                    <td class="jsgrid-cell" style="width: {{(index $.Content.Fields $colNo).GetPxWidth}}px;">
                                         {{. | toString | trim}}
                                     </td>
                                 {{end}}

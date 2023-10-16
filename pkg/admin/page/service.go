@@ -1,45 +1,44 @@
 package page
 
 import (
-	"github.com/gorilla/mux"
+	"github.com/taverok/lazyadmin/pkg/admin/resource"
 )
 
 type Service struct {
-	repo      *MysqlRepo
-	Resources []*Resource
+	repo            *MysqlRepo
+	ResourceService *resource.Service
 
 	sidebar    []string
 	nameToType []string
 }
 
-func NewService(handler *mux.Router, repo *MysqlRepo, resources []*Resource) *Service {
+func NewService(repo *MysqlRepo, resourceService *resource.Service) *Service {
 	service := Service{
-		repo:      repo,
-		Resources: resources,
+		repo:            repo,
+		ResourceService: resourceService,
 	}
 
-	for _, r := range resources {
-		service.sidebar = append(service.sidebar, r.Name)
+	for _, r := range resourceService.GetResources() {
+		service.sidebar = append(service.sidebar, r.Table)
 	}
 
 	return &service
 }
 
-func (it *Service) List(p *Resource) (Page, error) {
+func (it *Service) List(p *resource.Resource) (Page[Table], error) {
 	fields := p.GetFields('R')
-	data, err := it.repo.GetAll(fields, p.Name)
+	data, err := it.repo.GetAll(fields, p.Table)
 	if err != nil {
-		return Page{}, err
+		return Page[Table]{}, err
 	}
 
 	return it.toTablePage(p, data, fields), nil
 }
 
-func (it *Service) toTablePage(p *Resource, data [][]any, fields []*Field) Page {
-
-	return Page{
-		Name: p.Name,
-		Content: &Table{
+func (it *Service) toTablePage(p *resource.Resource, data [][]any, fields []*resource.Field) Page[Table] {
+	return Page[Table]{
+		Name: p.Table,
+		Content: Table{
 			Fields: fields,
 			Data:   data,
 		},

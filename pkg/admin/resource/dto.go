@@ -1,11 +1,13 @@
-package page
+package resource
 
 import (
 	"strings"
+
+	database "github.com/taverok/lazyadmin/pkg/db"
 )
 
 type Resource struct {
-	Name   string   `yaml:"name"`
+	Table  string   `yaml:"table"`
 	Fields []*Field `yaml:"fields"`
 	// TODO: pagination
 	// TODO: filters
@@ -23,23 +25,28 @@ func (it Resource) GetFields(op rune) []*Field {
 }
 
 type Field struct {
-	//Roles []string `yaml:"roles"`
-	Name  string    `yaml:"name"`
-	Width string    `yaml:"width"`
-	Ops   string    `yaml:"ops"`
-	Type  FieldType `yaml:"type"`
+	//TODO: Roles []string `yaml:"roles"`
+	Name  string `yaml:"name"`
+	Width string `yaml:"width"`
+	Ops   string `yaml:"ops"`
+	Meta  database.FieldMeta
 }
 
-func (it *Field) SetDefaults() {
+func (it *Field) SetDefaults(meta *database.FieldMeta) {
+	it.Meta = *meta
+
 	if it.Ops == "" {
 		it.Ops = "CRU"
-	}
-	if it.Type == "" {
-		it.Type = "text"
 	}
 	if it.Width == "" {
 		it.Width = "150px"
 	}
 }
 
-type FieldType string
+func (it Field) GetPxWidth() int {
+	if it.Meta.IsPK && it.Meta.IsNum() {
+		return 20
+	}
+
+	return 100
+}
