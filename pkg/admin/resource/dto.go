@@ -2,12 +2,14 @@ package resource
 
 import (
 	"strings"
+	"unicode"
 
 	database "github.com/taverok/lazyadmin/pkg/db"
 )
 
 type Resource struct {
 	Table  string   `yaml:"table"`
+	Source string   `yaml:"source"`
 	Fields []*Field `yaml:"fields"`
 	// TODO: pagination
 	// TODO: filters
@@ -16,7 +18,7 @@ type Resource struct {
 func (it Resource) GetFields(op rune) []*Field {
 	var fields []*Field
 	for _, f := range it.Fields {
-		if strings.ContainsRune(f.Ops, op) {
+		if strings.ContainsRune(f.Ops, unicode.ToUpper(op)) {
 			fields = append(fields, f)
 		}
 	}

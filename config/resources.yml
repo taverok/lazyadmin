@@ -1,4 +1,5 @@
 - table: user
+  source: main
   fields:
     - name: id
       ops: R

@@ -111,7 +111,7 @@
                         data-accordion="false">
                         {{range .Menu}}
                             <li class="nav-item">
-                                <a href="{{.}}" class="nav-link">
+                                <a href="/admin/{{.}}" class="nav-link">
                                     <i class="nav-icon far fa-image"></i>
                                     <p>
                                         {{. | title}}
@@ -125,6 +125,9 @@
         </aside>
 
         <div class="content-wrapper">
+            {{if .HasError }}
+                <div>{{.Error}}</div>
+            {{end}}
             <section class="content">
                 {{ template "content" .}}
             </section>

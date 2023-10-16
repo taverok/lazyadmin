@@ -1,4 +1,4 @@
-package database
+package db
 
 import (
 	"fmt"
@@ -9,17 +9,26 @@ import (
 )
 
 type DataSource struct {
-	Host    string
-	Port    int
-	User    string
-	Pass    string
-	Name    string
-	SSLMode string
+	Driver  string `yaml:"driver"`
+	Host    string `yaml:"host"`
+	Port    int    `yaml:"port"`
+	User    string `yaml:"user"`
+	Pass    string `yaml:"pass"`
+	Name    string `yaml:"name"`
+	SSLMode string `yaml:"SSLMode"`
 }
 
-func NewMysqlDb(ds DataSource) (*sqlx.DB, error) {
-	dsn := fmt.Sprintf("%s:%s@(%s:%d)/%s", ds.User, ds.Pass, ds.Host, ds.Port, ds.Name)
-	db, err := sqlx.Connect("mysql", dsn)
+func (it DataSource) dsn() string {
+	switch it.Driver {
+	case "mysql":
+		return fmt.Sprintf("%s:%s@(%s:%d)/%s", it.User, it.Pass, it.Host, it.Port, it.Name)
+	}
+
+	return fmt.Sprintf("%s:%s@(%s:%d)/%s", it.User, it.Pass, it.Host, it.Port, it.Name)
+}
+
+func NewDb(ds DataSource) (*sqlx.DB, error) {
+	db, err := sqlx.Connect(ds.Driver, ds.dsn())
 	if err != nil {
 		log.Fatalln(err)
 	}

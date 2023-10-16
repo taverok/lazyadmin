@@ -1,32 +1,28 @@
 package config
 
-import database "github.com/taverok/lazyadmin/pkg/db"
+import (
+	"os"
+
+	"github.com/taverok/lazyadmin/pkg/db"
+	"gopkg.in/yaml.v3"
+)
 
 type Config struct {
-	UrlPrefix    string
-	Port         int
-	ResourcePath string
-	Db           database.DataSource
-	TemplateName string
+	UrlPrefix string                   `yaml:"urlPrefix"`
+	Port      int                      `yaml:"port"`
+	Sources   map[string]db.DataSource `yaml:"sources"`
 }
 
-func DefaultConfig() Config {
-	// TODO: вынести в файл
-
-	ds := database.DataSource{
-		Host:    "localhost",
-		Port:    3309,
-		User:    "test",
-		Name:    "test",
-		SSLMode: "disable",
-		Pass:    "test",
+func Parse(path string) (*Config, error) {
+	c := &Config{}
+	configFile, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(configFile, c)
+	if err != nil {
+		return nil, err
 	}
 
-	return Config{
-		UrlPrefix:    "/admin",
-		Port:         8080,
-		ResourcePath: "resources",
-		TemplateName: "lte",
-		Db:           ds,
-	}
+	return c, err
 }

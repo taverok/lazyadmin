@@ -1,0 +1,11 @@
+urlPrefix: admin
+port: 8080
+sources:
+  main:
+    driver: mysql
+    host: "localhost"
+    port: 3309
+    user: "test"
+    pass: "test"
+    name: "test"
+    SSLMode: "disable"

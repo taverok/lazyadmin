@@ -6,54 +6,81 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/taverok/lazyadmin/pkg/admin/config"
 	"github.com/taverok/lazyadmin/pkg/admin/resource"
-	"github.com/taverok/lazyadmin/pkg/admin/static"
+	"github.com/taverok/lazyadmin/pkg/utils"
 )
 
 type Handler struct {
-	Router *mux.Router
-	Config config.Config
-
-	StaticService *static.Service
-	Service       *Service
+	Router  *mux.Router
+	Prefix  string
+	Service *Service
 }
 
 func (it *Handler) Register() {
-	for _, p := range it.Service.ResourceService.GetResources() {
+	for _, r := range it.Service.ResourceService.GetResources() {
 		// List
-		route := fmt.Sprintf("%s/%s", it.Config.UrlPrefix, p.Table)
-		slog.Info(fmt.Sprintf("GET endpoint for %s is %s", p.Table, route))
+		route := fmt.Sprintf("/%s/%s", it.Prefix, r.Table)
+		slog.Info(fmt.Sprintf("GET endpoint for %s is %s", r.Table, route))
+		it.Router.HandleFunc(route, it.Get(r)).Methods(http.MethodGet)
 
-		it.Router.HandleFunc(route, it.Get(p)).Methods(http.MethodGet)
-		it.Router.HandleFunc(route, it.Create(p)).Methods(http.MethodPost)
-		it.Router.HandleFunc(route, it.Update(p)).Methods(http.MethodPut)
+		it.Router.HandleFunc(route, it.Create(r)).Methods(http.MethodPost)
+		it.Router.HandleFunc(route, it.Update(r)).Methods(http.MethodPut)
 	}
+
+	route := fmt.Sprintf("%s/form/{resource}/{id}", it.Prefix)
+
+	it.Router.HandleFunc(route, it.UpdateForm()).Methods(http.MethodGet)
 }
 
 func (it *Handler) Get(p *resource.Resource) func(w http.ResponseWriter, r *http.Request) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		page := Page[Table]{}
+		defer utils.HtmlTemplate("table").Execute(w, &page)
+
 		page, err := it.Service.List(p)
 		if err != nil {
-			slog.Error(err.Error())
-		}
-
-		err = it.StaticService.Template("table").Execute(w, page)
-		if err != nil {
-			slog.Error(err.Error())
+			page.Error = err.Error()
+			return
 		}
 	}
-	return handler
 }
 
-func (it *Handler) Create(p *resource.Resource) func(w http.ResponseWriter, r *http.Request) {
-	handler := func(w http.ResponseWriter, r *http.Request) {
+func (it *Handler) UpdateForm() func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		page := Page[Form]{}
+		defer utils.HtmlTemplate("form").Execute(w, &page)
 
+		vars := mux.Vars(r)
+		resourceName := vars["resource"]
+		id := vars["id"]
+		err := r.ParseForm()
+		if err != nil {
+			page.Error = err.Error()
+			return
+		}
+		page, err = it.Service.Form(resourceName, map[string]string{"id": id})
+		if err != nil {
+			page.Error = err.Error()
+			return
+		}
 	}
-	return handler
 }
 
 func (it *Handler) Update(p *resource.Resource) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		resourceName := vars["resource"]
+		id := vars["id"]
+		err := r.ParseForm()
+		if err != nil {
+			slog.Error(err.Error())
+			return
+		}
+		it.Service.Update(resourceName, id, r.Form)
+	}
+}
+
+func (it *Handler) Create(p *resource.Resource) func(w http.ResponseWriter, r *http.Request) {
 	handler := func(w http.ResponseWriter, r *http.Request) {
 
 	}
