@@ -11,25 +11,24 @@ import (
 )
 
 type Handler struct {
-	Router  *mux.Router
 	Prefix  string
 	Service *Service
 }
 
-func (it *Handler) Register() {
+func (it *Handler) Register(router *mux.Router) {
 	for _, r := range it.Service.ResourceService.GetResources() {
 		// List
 		route := fmt.Sprintf("/%s/%s", it.Prefix, r.Table)
 		slog.Info(fmt.Sprintf("GET endpoint for %s is %s", r.Table, route))
-		it.Router.HandleFunc(route, it.Get(r)).Methods(http.MethodGet)
+		router.HandleFunc(route, it.Get(r)).Methods(http.MethodGet)
 
-		it.Router.HandleFunc(route, it.Create(r)).Methods(http.MethodPost)
-		it.Router.HandleFunc(route, it.Update(r)).Methods(http.MethodPut)
+		router.HandleFunc(route, it.Create(r)).Methods(http.MethodPost)
+		router.HandleFunc(route, it.Update(r)).Methods(http.MethodPut)
 	}
 
 	route := fmt.Sprintf("%s/form/{resource}/{id}", it.Prefix)
 
-	it.Router.HandleFunc(route, it.UpdateForm()).Methods(http.MethodGet)
+	router.HandleFunc(route, it.UpdateForm()).Methods(http.MethodGet)
 }
 
 func (it *Handler) Get(p *resource.Resource) func(w http.ResponseWriter, r *http.Request) {

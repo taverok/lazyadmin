@@ -13,6 +13,9 @@ func (it Page[T]) HasError() bool {
 	return it.Error != ""
 }
 
+type Empty struct {
+}
+
 type Table struct {
 	Fields []*resource.Field
 	Data   [][]any //TODO swap for FieldValue
@@ -44,4 +47,9 @@ func NewFieldValue(f *resource.Field, v any) FieldValue {
 		Field: f,
 		Value: v,
 	}
+}
+
+type Login struct {
+	User string
+	Pass string
 }

@@ -1,5 +1,12 @@
 urlPrefix: admin
 port: 8080
+auth:
+  type: inConfig
+  jwtSecret: test123
+  details:
+    - name: test
+      pass: test
+
 sources:
   main:
     driver: mysql

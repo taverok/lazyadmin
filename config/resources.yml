@@ -1,10 +1,10 @@
 - table: user
-  source: main
-  fields:
-    - name: id
-      ops: R
-      width: 20px
-    - name: name
-    - name: email
-    - name: role
-      values: allRoles
+
+#- table: account
+#  source: main
+#  fields:
+#    - name: id
+#      ops: R
+#    - name: name
+#    - name: email
+#    - name: role

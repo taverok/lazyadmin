@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/jmoiron/sqlx"
-	database "github.com/taverok/lazyadmin/pkg/db"
+	"github.com/taverok/lazyadmin/pkg/db"
 	"github.com/taverok/lazyadmin/pkg/rest"
 	"github.com/taverok/lazyadmin/pkg/utils"
 )
@@ -38,18 +38,14 @@ func (it *Service) init(sourceName string) error {
 	}
 
 	for _, r := range it.resources {
-		if r.Source != sourceName {
+		if r.Source != "" && r.Source != sourceName {
 			continue
 		}
-		metas, err := database.AnalyzeTable(it.db.DB, r.Table)
+		metas, err := db.AnalyzeTable(it.db.DB, r.Table)
 		if err != nil {
 			return err
 		}
-
-		for _, f := range r.Fields {
-			meta := metas[f.Name]
-			f.SetDefaults(meta)
-		}
+		r.SetDefaults(metas)
 
 		it.nameToResource[r.Table] = r
 	}

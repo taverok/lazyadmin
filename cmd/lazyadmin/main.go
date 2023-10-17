@@ -16,12 +16,13 @@ import (
 func main() {
 	logger.InitDefault()
 
-	cfg, err := config.Parse("config/config.yml")
+	cfg, err := config.NewConfig("config/config.yml")
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
 	r := mux.NewRouter()
+
 	app := admin.App{Router: r, Config: cfg}
 	err = app.Init()
 	if err != nil {

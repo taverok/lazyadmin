@@ -4,20 +4,35 @@ import (
 	"fmt"
 
 	"github.com/gorilla/mux"
+	"github.com/taverok/lazyadmin/pkg/admin/auth"
+	"github.com/taverok/lazyadmin/pkg/admin/auth/provider"
 	"github.com/taverok/lazyadmin/pkg/admin/config"
 	"github.com/taverok/lazyadmin/pkg/admin/page"
 	"github.com/taverok/lazyadmin/pkg/admin/resource"
-	database "github.com/taverok/lazyadmin/pkg/db"
+	"github.com/taverok/lazyadmin/pkg/db"
 )
 
 type App struct {
-	Router *mux.Router
-	Config *config.Config
+	Router       *mux.Router
+	Config       *config.Config
+	AuthProvider provider.Provider
 }
 
 func (it *App) Init() error {
+	err := it.initAuthProvider()
+	if err != nil {
+		return err
+	}
+
+	authService := auth.Service{Config: it.Config, Provider: it.AuthProvider}
+	authHandler := auth.Handler{
+		Prefix:  it.Config.UrlPrefix,
+		Service: authService,
+	}
+	authHandler.Register(it.Router)
+
 	for sourceName, source := range it.Config.Sources {
-		db, err := database.NewDb(source)
+		db, err := db.NewDb(source)
 		if err != nil {
 			return err
 		}
@@ -31,12 +46,28 @@ func (it *App) Init() error {
 
 		// handlers
 		pageHandler := page.Handler{
-			Router:  it.Router,
 			Prefix:  fmt.Sprintf("%s/%s", it.Config.UrlPrefix, sourceName),
 			Service: pageService,
 		}
-		pageHandler.Register()
+		pageHandler.Register(it.Router)
 	}
+
+	return nil
+}
+
+func (it *App) initAuthProvider() error {
+	if it.AuthProvider != nil {
+		return nil
+	}
+
+	authResolver := provider.NewResolver()
+	var p provider.Provider
+	p, err := authResolver.Resolve(it.Config.Auth)
+	if err != nil {
+		return err
+	}
+
+	it.AuthProvider = p
 
 	return nil
 }

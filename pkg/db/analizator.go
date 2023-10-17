@@ -14,8 +14,16 @@ type FieldMeta struct {
 	IsPK       bool
 }
 
+func (it *FieldMeta) IsInt() bool {
+	return it.Type == "INT" || it.Type == "BIGINT"
+}
+
+func (it *FieldMeta) IsDecimal() bool {
+	return it.Type == "DECIMAL"
+}
+
 func (it *FieldMeta) IsNum() bool {
-	return it.Type == "INT" || it.Type == "BIGINT" || it.Type == "DECIMAL"
+	return it.IsInt() || it.IsDecimal()
 }
 
 func (it *FieldMeta) IsBool() bool {
@@ -26,7 +34,7 @@ func (it *FieldMeta) IsText() bool {
 	return it.Type == "VARCHAR" || it.Type == "TEXT" || it.Type == "NVARCHAR"
 }
 
-func (it *FieldMeta) isDate() bool {
+func (it *FieldMeta) IsDate() bool {
 	return it.Type == "DATETIME"
 }
 
